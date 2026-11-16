@@ -1,18 +1,18 @@
-import React from "react";
-import { Code2, Play, Sparkles } from "lucide-react";
+import React from 'react'
+import { Code2, Play, Sparkles } from 'lucide-react'
 
 interface CodeInputPaneProps {
-  code: string;
-  onChange: (value: string) => void;
-  onAudit: () => void;
-  isLoading: boolean;
+  code: string
+  onChange: (value: string) => void
+  onAudit: () => void
+  isLoading: boolean
 }
 
 const SAMPLE_HTML = `<div class="card" style="background: #f0f0f0; color: #b5b5b5;">
   <img src="banner.jpg" />
   <div onclick="submitForm()" class="btn">Submit</div>
   <input type="text" placeholder="Enter email" />
-</div>`;
+</div>`
 
 export const CodeInputPane: React.FC<CodeInputPaneProps> = ({
   code,
@@ -21,8 +21,8 @@ export const CodeInputPane: React.FC<CodeInputPaneProps> = ({
   isLoading,
 }) => {
   const handleLoadSample = () => {
-    onChange(SAMPLE_HTML);
-  };
+    onChange(SAMPLE_HTML)
+  }
 
   return (
     <section
@@ -57,7 +57,7 @@ export const CodeInputPane: React.FC<CodeInputPaneProps> = ({
           onChange={(e) => onChange(e.target.value)}
           placeholder="Paste your HTML or JSX snippet here..."
           spellCheck={false}
-          className="flex-1 w-full min-h-[320px] p-3 font-mono text-sm text-slate-800 bg-slate-900/5 border border-slate-300 rounded-lg resize-none focus:bg-white transition-colors"
+          className="flex-1 w-full min-h-80 p-3 font-mono text-sm text-slate-800 bg-slate-900/5 border border-slate-300 rounded-lg resize-none focus:bg-white transition-colors"
         />
 
         <div className="mt-4 flex items-center justify-between">
@@ -73,10 +73,10 @@ export const CodeInputPane: React.FC<CodeInputPaneProps> = ({
             className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
           >
             <Play className="w-4 h-4 fill-current" aria-hidden="true" />
-            {isLoading ? "Auditing Code..." : "Run WCAG Audit"}
+            {isLoading ? 'Auditing Code...' : 'Run WCAG Audit'}
           </button>
         </div>
       </div>
     </section>
-  );
-};
+  )
+}

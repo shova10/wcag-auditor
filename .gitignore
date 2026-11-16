@@ -26,3 +26,4 @@ dist-ssr
 # Environment & Vercel
 .env
 .vercelgit init
+.vercel
