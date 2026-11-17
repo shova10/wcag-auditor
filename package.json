@@ -11,7 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^1.8.0",
+    "@google/genai": "^3.4.0",
     "@tailwindcss/vite": "^4.3.5",
     "ai": "^7.0.173",
     "lucide-react": "^1.73.0",
