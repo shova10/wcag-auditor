@@ -80,7 +80,7 @@ Bash
 (Note on Windows PowerShell: If vercel dev does not automatically pick up .env.local, load it into your session first:)
 
 PowerShell
-Get-Content .env.local | ForEach-Object { if ($_ -match '^\s*([^#][^=]+)=(.*)$') {      [Environment]::SetEnvironmentVariable($matches[1].Trim(),$matches[2].Trim(), "Process") } }
+```Get-Content .env.local | ForEach-Object { if ($_ -match '^\s*([^#][^=]+)=(.*)$') {      [Environment]::SetEnvironmentVariable($matches[1].Trim(),$matches[2].Trim(), "Process") } }```
     vercel dev
 
 Deployment (Vercel)
