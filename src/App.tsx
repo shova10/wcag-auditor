@@ -1,43 +1,44 @@
-import { useState } from "react";
-import { Accessibility } from "lucide-react";
-import { CodeInputPane } from "./components/CodeInputPane";
-import { AuditResultsPane } from "./components/AuditResultsPane";
-import type { AuditResponse } from "./types/audit";
+import { useState } from 'react'
+import { Accessibility } from 'lucide-react'
+import { CodeInputPane } from './components/CodeInputPane'
+import { AuditResultsPane } from './components/AuditResultsPane'
+import type { AuditResponse } from './types/audit'
 
 export function App() {
-  const [code, setCode] = useState("");
-  const [result, setResult] = useState<AuditResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [code, setCode] = useState('')
+  const [result, setResult] = useState<AuditResponse | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleRunAudit = async () => {
-    if (!code.trim()) return;
+    if (!code.trim()) return
 
-    setIsLoading(true);
-    setError(null);
+    setIsLoading(true)
+    setError(null)
 
     try {
-      const response = await fetch("/api/audit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/audit', {
+        method: 'POST',
+        credentials: 'omit',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ htmlCode: code }),
-      });
+      })
 
-      const data = await response.json();
+      const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to audit snippet");
+        throw new Error(data.error || 'Failed to audit snippet')
       }
 
-      setResult(data as AuditResponse);
+      setResult(data as AuditResponse)
     } catch (err: unknown) {
       const message =
-        err instanceof Error ? err.message : "An unexpected error occurred.";
-      setError(message);
+        err instanceof Error ? err.message : 'An unexpected error occurred.'
+      setError(message)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900 flex flex-col">
@@ -59,7 +60,8 @@ export function App() {
               WCAG Alt-Text & Contrast Auditor
             </h1>
             <p className="text-xs text-slate-500">
-              AI-powered semantic HTML, contrast ratio, and ARIA compliance analyzer
+              AI-powered semantic HTML, contrast ratio, and ARIA compliance
+              analyzer
             </p>
           </div>
         </div>
@@ -75,14 +77,10 @@ export function App() {
           onAudit={handleRunAudit}
           isLoading={isLoading}
         />
-        <AuditResultsPane
-          result={result}
-          isLoading={isLoading}
-          error={error}
-        />
+        <AuditResultsPane result={result} isLoading={isLoading} error={error} />
       </main>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App

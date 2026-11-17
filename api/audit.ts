@@ -1,14 +1,20 @@
 import { Anthropic } from '@anthropic-ai/sdk'
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
-
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
+
+  const apiKey = process.env.ANTHROPIC_API_KEY
+  if (!apiKey) {
+    return res.status(500).json({
+      error:
+        'ANTHROPIC_API_KEY is missing from environment variables (.env.local).',
+    })
+  }
+
+  const anthropic = new Anthropic({ apiKey })
 
   try {
     const { htmlCode } = req.body
@@ -52,7 +58,13 @@ Analyze the provided HTML/JSX snippet and return a strict JSON object (and nothi
       throw new Error('Unexpected response type from Anthropic')
     }
 
-    const jsonOutput = JSON.parse(contentBlock.text)
+    // Strip markdown code fences if the model wraps the JSON output
+    const cleanedJson = contentBlock.text
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/\s*```$/i, '')
+      .trim()
+
+    const jsonOutput = JSON.parse(cleanedJson)
     return res.status(200).json(jsonOutput)
   } catch (error: unknown) {
     console.error('Audit API Error:', error)
