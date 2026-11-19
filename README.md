@@ -130,3 +130,55 @@ JSON
   <Elicitation label="Give me git commands to commit and push README.md to GitHub" query="Give me the git commands to commit and push my new README.md to GitHub."/>
 </ElicitationsGroup>
 
+## Architecture Overview
+
+```
+[React 19 + TypeScript UI]
+       │  POST /api/audit { htmlCode }
+       ▼
+[Vercel Serverless Function (/api/audit.ts)]
+       │  System Instruction + Strict JSON Schema + Exponential Backoff
+       ▼
+[Google Gemini API (gemini-3.8-flash)]
+       │  Validated JSON Payload
+       ▼
+[AuditResultsPane & AuditCard Components]
+```
+
+AI Integration & Prompt Engineering
+System Prompt
+"You are an expert WCAG 2.1 AA/AAA web accessibility auditor and senior frontend engineer. Analyze the provided HTML or JSX snippet for accessibility violations across four categories: missing or non-descriptive alt text (missing-alt), insufficient color contrast (contrast-ratio), missing or improper ARIA attributes/labels (missing-aria), and non-semantic HTML structure (semantic-html). Return ONLY valid JSON matching the requested schema with an overallScore (0–100), a concise summary, and an array of actionable issues containing exact drop-in codePatch fixes."
+
+Why Structured JSON Output Was Chosen Over Raw Text
+Raw markdown prose from an LLM varies in formatting, breaks UI parsing, and forces users to manually extract fixes from walls of text. Enforcing responseMimeType: "application/json" with a deterministic schema guarantees that every response maps cleanly to TypeScript interfaces (AuditResponse / AuditIssue), enabling severity color-coding, score badges, automated Vitest contract assertions, and one-click Copy Fix buttons.
+
+Known Limitations
+No Database Persistence: Audit history is stored strictly in React component state; refreshing the browser clears current findings.
+
+Static Snippet Scope: Evaluates pasted HTML/JSX markup and inline styles rather than crawling live URLs or computing external CSS cascade rules.
+
+API Rate Limits: Subject to upstream AI provider quota limits and serverless cold-start latency during traffic spikes.
+
+
+---
+
+### 2. Deployment Checklist (FE-11)
+
+| Category | Verification Item | Status | Notes / Verification Evidence |
+| :--- | :--- | :---: | :--- |
+| **Environment Variables** | `GEMINI_API_KEY` configured in Vercel Production & Preview settings without exposing secrets in client bundles (`VITE_*` omitted). | `[x]` | Verified via `vercel env` and network tab inspection (key stays server-side in `api/audit.ts`). |
+| **Error Boundaries & Fallbacks** | Empty input disabled preventatively; `500` / `429` API failures surface an accessible `role="alert"` banner with exponential backoff retry. | `[x]` | Verified via Vitest Test 2 & Test 3 (`src/__tests__/App.test.tsx`) and live error simulation. |
+| **Mobile Responsiveness** | Split-pane grid collapses cleanly from `lg:grid-cols-2` to single-column vertical stack on `< 1024px` viewports without horizontal overflow. | `[x]` | Verified at `375x812` (iPhone) and `768x1024` (iPad) in Chrome DevTools & Lighthouse Mobile. |
+| **Accessibility & Audits** | Semantic `<header>`, `<main>`, `<section>` landmarks, skip link, `aria-live="polite"` status region, and `0` axe critical/serious issues. | `[x]` | Lighthouse Accessibility **95+**; axe DevTools scan **0** critical/serious issues. |
+| **Rollback Procedure** | Instant zero-downtime rollback path documented and verified. | `[x]` | Open **Vercel Dashboard → Deployments**, select the previous green production build, open the `...` menu, and click **Promote to Production**. |
+
+---
+
+### 3. Project Reflection
+
+Building the **WCAG Alt-Text & Contrast Auditor** reinforced that shipping an AI-powered developer tool requires far more engineering around the model boundary than inside the prompt itself. The hardest technical hurdle was stabilizing the full-stack contract and build pipeline: ensuring the serverless endpoint consistently returned strict JSON under transient `429`/`503` load spikes via exponential backoff, while aligning TypeScript project references (`tsconfig.app.json` vs. `tsconfig.node.json`) and Vitest's `jsdom` + V8 coverage environment so both `tsc -b` and automated integration tests executed cleanly.
+
+If I were building the next iteration, I would add client-side URL fetching or a live iframe preview sandbox so users could audit rendered computed styles rather than static JSX snippets alone, alongside `localStorage` audit history so developers can compare before-and-after scores across iterations. One surprising insight from accessibility testing my own auditor was catching subtle contrast edge cases—such as muted helper text (`text-slate-500` on `bg-slate-50`) sitting right on the `4.5:1` WCAG AA boundary—proving that automated tools like axe DevTools and Lighthouse catch real perceptual gaps even when semantic landmarks and ARIA attributes are thoughtfully engineered from day one.
+
+
+
